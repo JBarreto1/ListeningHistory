@@ -33,9 +33,9 @@
     </div>
 
     <script id="user-profile-template" type="text/x-handlebars-template">
-      <h1>Logged in as {{display_name}}</h1>
+      <h1>Logged in as {{data}}</h1>
       <div class="media">
-        <div class="pull-left">
+        <!-- <div class="pull-left">
           <img class="media-object" width="150" src="{{images.0.url}}" />
         </div>
         <div class="media-body">
@@ -48,7 +48,7 @@
             <dt>Profile Image</dt><dd class="clearfix"><a href="{{images.0.url}}">{{images.0.url}}</a></dd>
             <dt>Country</dt><dd>{{country}}</dd>
           </dl>
-        </div>
+        </div> -->
       </div>
     </script>
 
@@ -78,7 +78,10 @@
           }
           return hashParams;
         }
-
+        
+        console.log(window.location)
+        var params = getHashParams();
+        console.log(params)
         var userProfileSource = document.getElementById('user-profile-template').innerHTML,
             userProfileTemplate = Handlebars.compile(userProfileSource),
             userProfilePlaceholder = document.getElementById('user-profile');
@@ -86,92 +89,116 @@
         var oauthSource = document.getElementById('oauth-template').innerHTML,
             oauthTemplate = Handlebars.compile(oauthSource),
             oauthPlaceholder = document.getElementById('oauth');
-
-        var params = getHashParams();
-        console.log(params)
-
-        var access_token = params.access_token,
-            refresh_token = params.refresh_token,
-            error = params.error;
-
-        if (error) {
-          alert('There was an error during the authentication');
+            
+        if (params.loggedIn) {
+            response = {data: 'Jonah'}
+            userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+            $('#login').hide();
+            $('#loggedin').show();
         } else {
-          if (access_token) {
-            // render oauth info
-            oauthPlaceholder.innerHTML = oauthTemplate({
-              access_token: access_token,
-              refresh_token: refresh_token
-            });
-
-            $.ajax({
-                url: 'https://api.spotify.com/v1/me',
-                headers: {
-                  'Authorization': 'Bearer ' + access_token
-                },
-                success: function(response) {
-                  userProfilePlaceholder.innerHTML = userProfileTemplate(response);
-
-                  $('#login').hide();
-                  $('#loggedin').show();
-                }
-            });
-          } else {
-            
-              // render initial screen
-              $('#login').show();
-              $('#loggedin').hide();
-          }
-
-          document.getElementById('obtain-new-token').addEventListener('click', function() {
-            console.log(refresh_token)
-            $.ajax({
-              url: '/refresh_token',
-              data: {
-                'refresh_token': refresh_token
-              }
-            }).done(function(data) {
-              // console.log(data.access_token)
-              access_token = data.access_token;
-              oauthPlaceholder.innerHTML = oauthTemplate({
-                access_token: access_token,
-                refresh_token: refresh_token
-              });
-            });
-          }, false);
-
-          document.getElementById('test-button').addEventListener('click', function() {
-            console.log(access_token)
-            
-            $.ajax({
-            url: 'https://api.spotify.com/v1/me/player/recently-played',
-            headers: {
-                'Authorization': 'Bearer ' + access_token
-            },
-            success: function (response) {
-                console.log(response)
-            }
-            });
-            // $.ajax({
-            //   url: '/jtest',
-            //   data: {
-            //     'refresh_token': access_token
-            //   }
-            // }).done(function(data) {
-            //   console.log("i got here")
-            //   console.log(data.name)
-            // });
-          //   $.ajax({
-          //     url: 'https://api.spotify.com/v1/artists/0OdUWJ0sBjDrqHygGUXeCF',
-          //     headers: {
-          //         'Authorization': 'Bearer ' + access_token
-          //     },
-          //     success: function (response) {
-          //         console.log(response)
-          //     }
-          // });
-          }, false);
+            $('#login').show();
+            $('#loggedin').hide();
         }
+        // var params = getHashParams();
+        // console.log(params)
+
+        // var access_token = params.access_token,
+        //     refresh_token = params.refresh_token,
+        //     error = params.error;
+
+        // const getUserInfo = () => {
+        //     fetch('/getUserInfo',{method : "get"}).then((response)=>{
+        //         return response.json();
+        //     }).then((data)=>{
+        //         console.log(data);
+        //         displayTodos(data);
+        //     });
+        // }
+
+        // if (error) {
+        //   alert('There was an error during the authentication');
+        // } else {
+        //     if ()
+        // //   if (access_token) {
+        //     // render oauth info
+        //     oauthPlaceholder.innerHTML = oauthTemplate({
+        //       access_token: access_token,
+        //       refresh_token: refresh_token
+        //     });
+        //     response = {data: 'Jonah'}
+        //     userProfilePlaceholder.innerHTML = userProfileTemplate(response);
+        //     console.log()
+
+        //     $('#login').hide();
+        //     $('#loggedin').show();
+
+        //     // getTodos();
+
+        //     // $.ajax({
+        //     //     url: 'https://api.spotify.com/v1/me',
+        //     //     headers: {
+        //     //       'Authorization': 'Bearer ' + access_token
+        //     //     },
+        //     //     success: function(response) {
+                  
+        //     //     }
+        //     // });
+        //   } else {
+            
+        //       // render initial screen
+        //       $('#login').show();
+        //       $('#loggedin').hide();
+        //   }
+
+        //   document.getElementById('obtain-new-token').addEventListener('click', function() {
+        //     console.log(refresh_token)
+        //     $.ajax({
+        //       url: '/refresh_token',
+        //       data: {
+        //         'refresh_token': refresh_token
+        //       }
+        //     }).done(function(data) {
+        //       // console.log(data.access_token)
+        //       access_token = data.access_token;
+        //       oauthPlaceholder.innerHTML = oauthTemplate({
+        //         access_token: access_token,
+        //         refresh_token: refresh_token
+        //       });
+        //     });
+        //   }, false);
+
+        //   document.getElementById('test-button').addEventListener('click', function() {
+        //     console.log(access_token)
+            
+        //     $.ajax({
+        //     url: 'https://api.spotify.com/v1/me/player/recently-played',
+        //     headers: {
+        //         'Authorization': 'Bearer ' + access_token
+        //     },
+        //     success: function (response) {
+        //         console.log(response)
+        //     }
+        //     });
+        //     // $.ajax({
+        //     //   url: '/jtest',
+        //     //   data: {
+        //     //     'refresh_token': access_token
+        //     //   }
+        //     // }).done(function(data) {
+        //     //   console.log("i got here")
+        //     //   console.log(data.name)
+        //     // });
+        //   //   $.ajax({
+        //   //     url: 'https://api.spotify.com/v1/artists/0OdUWJ0sBjDrqHygGUXeCF',
+        //   //     headers: {
+        //   //         'Authorization': 'Bearer ' + access_token
+        //   //     },
+        //   //     success: function (response) {
+        //   //         console.log(response)
+        //   //     }
+        //   // });
+        //   }, false);
+        
       })();
     </script>
   </body>

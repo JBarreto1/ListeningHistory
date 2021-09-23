@@ -8,12 +8,15 @@ var cookieParser = require('cookie-parser');
 
 const {promisify} = require('util');
 
-var client_id = 'bced7ef4706341bbbbb2611f5f375ea0'; // Your client id
-var client_secret = '7b107c16b2804450bcae3a60f905dd9b'; // Your secret
+const key = require("../key");
+const client_id = key.client_id
+const client_secret = key.client_secret
 var redirect_uri = 'http://localhost:8888/callback'; // Your redirect uri
 
 var MongoClient = require('mongodb').MongoClient;
 var DBurl = "mongodb://localhost:27017/";
+const db = require("./db");
+const collection = "UserHist";
 
 
 /**
@@ -83,6 +86,14 @@ async function fetchCurrentUser(access_token) {
 async function findUserInDB(currentUser,currentUserName){
     //return the after timemark if the user already existed in the DB, otherwise return null
     let after = null
+    // db.getDB().collection(collection).find({}).toArray((err,documents)=>{
+    //     if(err)
+    //         console.log(err);
+    //     else{
+    //         console.log(documents)
+    //     }
+    // })
+
     const client = await MongoClient.connect(DBurl,{useNewUrlParser: true}) // function(err, db) {
         .catch(err => { console.log(err); });   
         //find the User and determine if there's an entry already
@@ -187,6 +198,16 @@ async function storePlays(data,currentUser) {
         }
 }
 
+async function getTracksFromDB(currentUser) {
+    db.getDB().collection(collection).find({userID: currentUser}).toArray((err,documents)=>{
+        if(err)
+            console.log(err);
+        else{
+            console.log(documents)
+        }
+    })
+}
+
 var stateKey = 'spotify_auth_state';
 
 var app = express();
@@ -253,6 +274,13 @@ app.get('/callback', function(req, res) {
                                             console.log(currentUser)
                                             storePlays(data, currentUser)
                                             // console.log(data)
+                                            // res.json({
+                                            //     data: currentUser
+                                            // })
+                                            res.redirect('/#' +
+                                                querystring.stringify({
+                                                    loggedIn: true
+                                                }));
                                         })
                                         .catch((error) => {
                                             console.error('Error (getting play history):', error);
@@ -276,10 +304,12 @@ app.get('/callback', function(req, res) {
           });;
     
     
-          res.redirect('/#' +
-            querystring.stringify({
-                data: "info sent"
-            }));
+        //   getTracksFromDB(currentUser)
+
+        //   res.redirect('/#' +
+        //     querystring.stringify({
+        //         data: "info sent"
+        //     }));
     //   else {
     //     res.redirect('/#' +
     //       querystring.stringify({
@@ -288,7 +318,7 @@ app.get('/callback', function(req, res) {
     //   }
     
     }
-})    
+})
 
 // add cronJob functionality in the future to keep an ongoing log of the songs I've listened to
 // var CronJob = require('cron').CronJob;
@@ -299,6 +329,24 @@ app.get('/callback', function(req, res) {
 
 // console.log('After job instantiation');
 // job.start();
+
+db.connect((err)=>{
+    // If err unable to connect to database
+    // End application
+    if(err){
+        console.log('unable to connect to database');
+        process.exit(1);
+    }
+    // Successfully connected to database
+    // Start up our Express Application
+    // And listen for Request
+    else{
+        // app.listen(3000,()=>{
+        //     console.log('connected to database, app listening on port 3000');
+        // });
+        console.log("connected to db")
+    }
+});
 
 console.log('Listening on 8888');
 app.listen(8888);
